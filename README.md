@@ -196,3 +196,5 @@ B.Tech Artificial Intelligence & Machine Learning
 This project is licensed under the MIT License.
 
 ⭐ If you found this project useful, don't forget to star the repository!
+
+## React application  initialized using Vite
