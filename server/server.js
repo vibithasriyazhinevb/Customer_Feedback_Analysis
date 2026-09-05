@@ -27,6 +27,16 @@ app.get("/", (req, res) => {
 // WRITE - Create feedback
 app.post("/api/feedback", async (req, res) => {
   try {
+    const { name, email, message } = req.body;
+
+    // Validate required fields
+    if (!name || !email || !message) {
+      return res.status(400).json({
+        message: "Name, email and message are required"
+      });
+    }
+
+    // Create feedback in MongoDB
     const feedback = await Feedback.create(req.body);
 
     res.status(201).json({
@@ -55,12 +65,6 @@ app.get("/api/feedback", async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
 // READ - Get feedback by ID
 app.get("/api/feedback/:id", async (req, res) => {
   try {
@@ -79,4 +83,10 @@ app.get("/api/feedback/:id", async (req, res) => {
       error: error.message
     });
   }
+});
+
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
