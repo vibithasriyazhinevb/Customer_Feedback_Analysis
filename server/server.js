@@ -90,3 +90,29 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+// UPDATE - Update feedback
+app.put("/api/feedback/:id", async (req, res) => {
+  try {
+    const feedback = await Feedback.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+
+    if (!feedback) {
+      return res.status(404).json({
+        message: "Feedback not found"
+      });
+    }
+
+    res.status(200).json({
+      message: "Feedback updated successfully",
+      feedback
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: "Failed to update feedback",
+      error: error.message
+    });
+  }
+});
