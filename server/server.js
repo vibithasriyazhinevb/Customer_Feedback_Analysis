@@ -60,3 +60,23 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+// READ - Get feedback by ID
+app.get("/api/feedback/:id", async (req, res) => {
+  try {
+    const feedback = await Feedback.findById(req.params.id);
+
+    if (!feedback) {
+      return res.status(404).json({
+        message: "Feedback not found"
+      });
+    }
+
+    res.status(200).json(feedback);
+  } catch (error) {
+    res.status(400).json({
+      message: "Invalid feedback ID",
+      error: error.message
+    });
+  }
+});
