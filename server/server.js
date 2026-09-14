@@ -4,6 +4,7 @@ const cors = require("cors");
 require("dotenv").config();
 
 const Feedback = require("./models/Feedback");
+const Customer = require("./models/Customer");
 
 const app = express();
 
@@ -25,24 +26,54 @@ app.get("/", (req, res) => {
   res.send("Customer Feedback API is running");
 });
 
-// WRITE - Create feedback
+// WRITE - Create feedback with Customer relationship
 app.post("/api/feedback", async (req, res) => {
   try {
-    const { name, email, message } = req.body;
+    const {
+      customerName,
+      name,
+      email,
+      rating,
+      message
+    } = req.body;
+
+    // Support both customerName and name
+    const finalCustomerName = customerName || name;
 
     // Validate required fields
-    if (!name || !email || !message) {
+    if (!finalCustomerName || !email || !rating || !message) {
       return res.status(400).json({
-        message: "Name, email and message are required"
+        message:
+          "Customer name, email, rating and message are required"
       });
     }
 
-    // Create feedback in MongoDB
-    const feedback = await Feedback.create(req.body);
+    // Find existing customer or create a new customer
+    let customer = await Customer.findOne({ email });
+
+    if (!customer) {
+      customer = await Customer.create({
+        name: finalCustomerName,
+        email
+      });
+    }
+
+    // Create feedback and connect it to Customer
+    const feedback = await Feedback.create({
+      customer: customer._id,
+      customerName: finalCustomerName,
+      rating,
+      message
+    });
+
+    // Return feedback with customer details
+    const populatedFeedback = await Feedback.findById(
+      feedback._id
+    ).populate("customer");
 
     res.status(201).json({
       message: "Feedback created successfully",
-      feedback
+      feedback: populatedFeedback
     });
   } catch (error) {
     res.status(400).json({
@@ -52,12 +83,12 @@ app.post("/api/feedback", async (req, res) => {
   }
 });
 
-// READ - Get all feedback
+// READ - Get all feedback with Customer relationship
 app.get("/api/feedback", async (req, res) => {
   try {
-    const feedback = await Feedback.find().sort({
-      createdAt: -1
-    });
+    const feedback = await Feedback.find()
+      .populate("customer")
+      .sort({ createdAt: -1 });
 
     res.status(200).json(feedback);
   } catch (error) {
@@ -68,10 +99,11 @@ app.get("/api/feedback", async (req, res) => {
   }
 });
 
-// READ - Get feedback by ID
+// READ - Get feedback by ID with Customer
 app.get("/api/feedback/:id", async (req, res) => {
   try {
-    const feedback = await Feedback.findById(req.params.id);
+    const feedback = await Feedback.findById(req.params.id)
+      .populate("customer");
 
     if (!feedback) {
       return res.status(404).json({
@@ -88,17 +120,50 @@ app.get("/api/feedback/:id", async (req, res) => {
   }
 });
 
+// READ - Get all feedback of a Customer
+app.get("/api/customers/:customerId/feedback", async (req, res) => {
+  try {
+    const feedback = await Feedback.find({
+      customer: req.params.customerId
+    })
+      .populate("customer")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(feedback);
+  } catch (error) {
+    res.status(400).json({
+      message: "Failed to fetch customer feedback",
+      error: error.message
+    });
+  }
+});
+
 // UPDATE - Update feedback
 app.put("/api/feedback/:id", async (req, res) => {
   try {
+    const updateData = {};
+
+    if (req.body.customerName || req.body.name) {
+      updateData.customerName =
+        req.body.customerName || req.body.name;
+    }
+
+    if (req.body.rating !== undefined) {
+      updateData.rating = req.body.rating;
+    }
+
+    if (req.body.message) {
+      updateData.message = req.body.message;
+    }
+
     const feedback = await Feedback.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
       {
         new: true,
         runValidators: true
       }
-    );
+    ).populate("customer");
 
     if (!feedback) {
       return res.status(404).json({
