@@ -10,6 +10,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// MongoDB connection
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
@@ -54,7 +55,9 @@ app.post("/api/feedback", async (req, res) => {
 // READ - Get all feedback
 app.get("/api/feedback", async (req, res) => {
   try {
-    const feedback = await Feedback.find().sort({ createdAt: -1 });
+    const feedback = await Feedback.find().sort({
+      createdAt: -1
+    });
 
     res.status(200).json(feedback);
   } catch (error) {
@@ -85,18 +88,16 @@ app.get("/api/feedback/:id", async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
 // UPDATE - Update feedback
 app.put("/api/feedback/:id", async (req, res) => {
   try {
     const feedback = await Feedback.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true, runValidators: true }
+      {
+        new: true,
+        runValidators: true
+      }
     );
 
     if (!feedback) {
@@ -115,4 +116,35 @@ app.put("/api/feedback/:id", async (req, res) => {
       error: error.message
     });
   }
+});
+
+// DELETE - Delete feedback
+app.delete("/api/feedback/:id", async (req, res) => {
+  try {
+    const feedback = await Feedback.findByIdAndDelete(
+      req.params.id
+    );
+
+    if (!feedback) {
+      return res.status(404).json({
+        message: "Feedback not found"
+      });
+    }
+
+    res.status(200).json({
+      message: "Feedback deleted successfully"
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: "Failed to delete feedback",
+      error: error.message
+    });
+  }
+});
+
+// Start server
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
