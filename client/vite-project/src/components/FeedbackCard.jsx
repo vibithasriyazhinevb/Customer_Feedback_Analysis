@@ -1,12 +1,9 @@
-function FeedbackCard({
-  id,
-  name,
-  email,
-  rating,
-  message,
-  onUpdate,
-  onDelete,
-}) {
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+function FeedbackCard({ feedback, onUpdate, onDelete }) {
+  const { _id: id, customerName, customer, rating, message, attachment } = feedback;
+  const name = customerName || customer?.name || "Anonymous customer";
+  const email = customer?.email || "No email provided";
   const handleUpdate = () => {
     const newMessage = prompt(
       "Enter updated feedback:",
@@ -34,8 +31,7 @@ function FeedbackCard({
     }
 
     onUpdate(id, {
-      name,
-      email,
+      customerName: name,
       rating: ratingNumber,
       message: newMessage,
     });
@@ -53,21 +49,10 @@ function FeedbackCard({
 
   return (
     <div className="feedback-card">
-      <h2>{name}</h2>
-
-      <p>Email: {email}</p>
-
-      <p>Rating: {rating}/5</p>
-
-      <p>{message}</p>
-
-      <button onClick={handleUpdate}>
-        Edit
-      </button>
-
-      <button onClick={handleDelete}>
-        Delete
-      </button>
+      <div className="card-topline"><div><h3>{name}</h3><p className="email">{email}</p></div><span className="rating">{rating}/5</span></div>
+      <p className="message">{message}</p>
+      {attachment?.filePath && <a className="attachment" href={`${API_URL}${attachment.filePath}`} target="_blank" rel="noreferrer">View attachment: {attachment.fileName}</a>}
+      <div className="card-actions"><button onClick={handleUpdate}>Edit</button><button className="danger" onClick={handleDelete}>Delete</button></div>
     </div>
   );
 }
