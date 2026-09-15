@@ -1,0 +1,11 @@
+meta {
+  name: List customer feedback
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/api/customers/{{customerId}}/feedback
+  body: none
+  auth: none
+}

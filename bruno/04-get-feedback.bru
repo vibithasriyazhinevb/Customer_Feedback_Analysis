@@ -1,0 +1,11 @@
+meta {
+  name: Get feedback by ID
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/feedback/{{feedbackId}}
+  body: none
+  auth: none
+}

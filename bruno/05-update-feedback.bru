@@ -1,0 +1,18 @@
+meta {
+  name: Update feedback
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/api/feedback/{{feedbackId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "rating": 4,
+    "message": "Updated feedback message"
+  }
+}
