@@ -12,8 +12,7 @@ const Customer = require("./models/Customer");
 const app = express();
 
 if (!process.env.MONGO_URI) {
-  console.error("MONGO_URI is required to start the server");
-  process.exitCode = 1;
+  throw new Error("MONGO_URI is required to start the server");
 }
 
 app.use(cors());
@@ -46,16 +45,6 @@ const upload = multer({
 });
 
 app.use("/uploads", express.static(uploadsDirectory));
-
-// MongoDB connection
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log("MongoDB connected successfully");
-  })
-  .catch((error) => {
-    console.error("MongoDB connection failed:", error.message);
-  });
 
 // Home route
 app.get("/", (req, res) => {
@@ -258,12 +247,23 @@ app.delete("/api/feedback/:id", async (req, res) => {
   }
 });
 
-// Start server
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+async function startServer() {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("MongoDB connected successfully");
+
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("MongoDB connection failed:", error.message);
+    process.exitCode = 1;
+  }
+}
+
+startServer();
 
 app.use((error, _req, res, _next) => {
   if (error instanceof multer.MulterError || error.message?.includes("Only image")) {
