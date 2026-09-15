@@ -26,6 +26,21 @@ const feedbackSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+
+    attachment: {
+      fileName: {
+        type: String,
+        default: null,
+      },
+      filePath: {
+        type: String,
+        default: null,
+      },
+      fileType: {
+        type: String,
+        default: null,
+      },
+    },
   },
   {
     timestamps: true,
