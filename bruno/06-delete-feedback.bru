@@ -1,0 +1,11 @@
+meta {
+  name: Delete feedback
+  type: http
+  seq: 6
+}
+
+delete {
+  url: {{baseUrl}}/api/feedback/{{feedbackId}}
+  body: none
+  auth: none
+}

@@ -1,0 +1,6 @@
+{
+  "version": "1",
+  "name": "Customer Feedback API",
+  "type": "collection",
+  "ignore": ["node_modules", ".git"]
+}

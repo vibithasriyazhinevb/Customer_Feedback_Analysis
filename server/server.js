@@ -11,6 +11,11 @@ const Customer = require("./models/Customer");
 
 const app = express();
 
+if (!process.env.MONGO_URI) {
+  console.error("MONGO_URI is required to start the server");
+  process.exitCode = 1;
+}
+
 app.use(cors());
 app.use(express.json());
 
@@ -55,6 +60,10 @@ mongoose
 // Home route
 app.get("/", (req, res) => {
   res.send("Customer Feedback API is running");
+});
+
+app.get("/api/health", (_req, res) => {
+  res.status(200).json({ status: "ok" });
 });
 
 // WRITE - Create feedback with Customer relationship
@@ -161,6 +170,10 @@ app.get("/api/feedback/:id", async (req, res) => {
 // READ - Get all feedback of a Customer
 app.get("/api/customers/:customerId/feedback", async (req, res) => {
   try {
+    if (!mongoose.isValidObjectId(req.params.customerId)) {
+      return res.status(400).json({ message: "Invalid customer ID" });
+    }
+
     const feedback = await Feedback.find({
       customer: req.params.customerId
     })

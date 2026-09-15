@@ -7,6 +7,7 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 function App() {
   const [feedbacks, setFeedbacks] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [form, setForm] = useState({ customerName: "", email: "", rating: "5", message: "" });
   const [attachment, setAttachment] = useState(null);
   const [status, setStatus] = useState({ type: "", message: "" });
@@ -15,12 +16,22 @@ function App() {
   // Get feedback from backend
   useEffect(() => {
     fetch(`${API_URL}/api/feedback`)
-      .then((response) => response.json())
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.message || "Unable to load feedback.");
+        }
+        return data;
+      })
       .then((data) => {
         setFeedbacks(data);
       })
       .catch((error) => {
         console.error("Error fetching feedback:", error);
+        setStatus({ type: "error", message: error.message });
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   }, []);
 
@@ -144,7 +155,9 @@ function App() {
           {status.message && <p className={`status ${status.type}`}>{status.message}</p>}
         </form>
 
-        {feedbacks.length === 0 ? (
+        {isLoading ? (
+          <p className="empty-state">Loading feedback...</p>
+        ) : feedbacks.length === 0 ? (
           <p className="empty-state">No feedback yet. The first response will appear here.</p>
         ) : (
           <section className="feedback-list">
