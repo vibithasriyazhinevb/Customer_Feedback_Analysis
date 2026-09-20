@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_URL = "http://localhost:5000";
 
 function FeedbackCard({ feedback, onUpdate, onDelete }) {
   const { _id: id, customerName, customer, rating, message, attachment } = feedback;
