@@ -1,0 +1,10 @@
+{
+	"name": "customer-feedback-analysis",
+	"private": true,
+	"scripts": {
+		"server": "npm --prefix server start",
+		"client": "npm --prefix client/vite-project run dev",
+		"build": "npm --prefix client/vite-project run build",
+		"test": "npm --prefix client/vite-project test"
+	}
+}

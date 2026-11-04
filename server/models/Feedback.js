@@ -40,6 +40,11 @@ const feedbackSchema = new mongoose.Schema(
         type: String,
         default: null,
       },
+      data: {
+        type: Buffer,
+        default: null,
+        select: false,
+      },
     },
   },
   {

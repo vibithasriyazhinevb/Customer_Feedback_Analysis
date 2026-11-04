@@ -13,6 +13,18 @@ const customerSchema = new mongoose.Schema(
       required: true,
       unique: true,
       trim: true,
+      lowercase: true,
+    },
+
+    passwordHash: {
+      type: String,
+      select: false,
+    },
+
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
     },
   },
   {
