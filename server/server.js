@@ -16,6 +16,8 @@ const Feedback = require("./models/Feedback");
 const Customer = require("./models/Customer");
 
 const app = express();
+const clientBuildDirectory = path.join(__dirname, "../client/vite-project/dist");
+let mongoConnectionPromise;
 let JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET && process.env.NODE_ENV !== "production") {
   const developmentSecretPath = path.join(__dirname, ".dev-jwt-secret");
@@ -83,6 +85,37 @@ const openai = process.env.OPENAI_API_KEY
 app.use(cors());
 app.use(express.json());
 
+const ensureMongoConnection = async () => {
+  if (!process.env.MONGO_URI) {
+    throw new Error("MONGO_URI is required to connect to the database");
+  }
+  if (mongoose.connection.readyState === 1) return;
+  if (!mongoConnectionPromise || mongoose.connection.readyState === 0) {
+    mongoConnectionPromise = mongoose.connect(process.env.MONGO_URI).catch((error) => {
+      mongoConnectionPromise = null;
+      throw error;
+    });
+  }
+  await mongoConnectionPromise;
+};
+
+if (process.env.VERCEL) {
+  app.use("/api", async (req, res, next) => {
+    if (req.path === "/health") return next();
+    if (!JWT_SECRET) {
+      return res.status(500).json({ message: "JWT_SECRET is required by the server" });
+    }
+
+    try {
+      await ensureMongoConnection();
+      next();
+    } catch (error) {
+      console.error("MongoDB connection failed:", error.message);
+      res.status(503).json({ message: "The database is unavailable" });
+    }
+  });
+}
+
 // ===============================
 // Upload configuration
 // ===============================
@@ -141,11 +174,10 @@ app.get("/runtime-config.js", (_req, res) => {
   res.type("application/javascript").send(`globalThis.__APP_CONFIG__ = ${config};`);
 });
 
+app.use(express.static(clientBuildDirectory));
+
 app.get("/", (_req, res) => {
-  const indexPath = path.join(
-    __dirname,
-    "../client/vite-project/dist/index.html"
-  );
+  const indexPath = path.join(clientBuildDirectory, "index.html");
   if (fs.existsSync(indexPath)) {
     return res.sendFile(indexPath);
   }
@@ -622,7 +654,7 @@ const startServer = async () => {
     throw new Error("JWT_SECRET is required to start the server");
   }
 
-  await mongoose.connect(process.env.MONGO_URI);
+  await ensureMongoConnection();
   console.log("MongoDB connected successfully");
 
   const port = process.env.PORT || 5000;

@@ -8,11 +8,11 @@ The responsive goodword workspace brings feedback collection and review into one
 
 The website uses the API on `http://localhost:5000` by default. Start the backend first; it connects to MongoDB before accepting requests. If using a different API host or port, set `VITE_API_URL` in `client/vite-project/.env` and restart Vite.
 
-## Deploy on Render
+## Deploy on Vercel
 
-The root `Dockerfile` builds the React client and serves it from the Node API, so the deployed site and API share one origin. Create a free MongoDB Atlas database, then in Render choose **New → Blueprint** and connect this repository's `main` branch. Render reads `render.yaml` and creates the web service. Set the generated Atlas connection string as `MONGO_URI` when prompted; `JWT_SECRET` is generated automatically. After the first deploy, open the Render service URL to use the website.
+The root `index.js` exports the Express app for Vercel, and `vercel.json` builds the React client and includes its assets in the deployment. Import this GitHub repository into Vercel and deploy the `main` branch. Create a MongoDB Atlas database, then add `MONGO_URI` and a strong, private `JWT_SECRET` under the Vercel project's **Settings → Environment Variables** before deploying. Do not commit `.env` files or share secrets in chat.
 
-Feedback attachments are stored in MongoDB so they remain available after a service restart. Google sign-in and AI autocomplete are optional and require their respective OAuth client ID and OpenAI API key to be configured in the hosting service. Set `GOOGLE_CLIENT_ID` in the hosting service to enable Google sign-in; the app reads it at runtime, so no client rebuild is needed. Never commit `.env` files or share secrets in chat.
+Feedback attachments are stored in MongoDB so they remain available after a service restart. Google sign-in and AI autocomplete are optional and require `GOOGLE_CLIENT_ID` and `OPENAI_API_KEY` to be configured in Vercel. The app reads the Google client ID at runtime, so no client rebuild is needed.
 
 ## Authentication
 

@@ -1,0 +1,9 @@
+{
+  "installCommand": "npm --prefix server ci --omit=dev && npm --prefix client/vite-project ci",
+  "buildCommand": "npm --prefix client/vite-project run build",
+  "functions": {
+    "index.js": {
+      "includeFiles": "client/vite-project/dist/**"
+    }
+  }
+}
