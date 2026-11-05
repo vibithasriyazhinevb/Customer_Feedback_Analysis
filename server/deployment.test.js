@@ -6,7 +6,7 @@ const Feedback = require("./models/Feedback");
 process.env.JWT_SECRET ||= crypto.randomBytes(32).toString("hex");
 process.env.GOOGLE_CLIENT_ID = "deployment-test-client.apps.googleusercontent.com";
 
-const { app } = require("./server");
+const app = require("../index");
 const originalFindOne = Feedback.findOne;
 let server;
 let baseUrl;
@@ -34,6 +34,13 @@ test("runtime config exposes the optional Google client ID", async () => {
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type"), /javascript/);
   assert.match(script, /deployment-test-client\.apps\.googleusercontent\.com/);
+});
+
+test("Vercel entrypoint serves the API health check", async () => {
+  const response = await fetch(`${baseUrl}/api/health`);
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { status: "ok" });
 });
 
 test("attachment endpoint reads durable file data from MongoDB", async () => {
