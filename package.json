@@ -6,5 +6,8 @@
 		"client": "npm --prefix client/vite-project run dev",
 		"build": "npm --prefix client/vite-project run build",
 		"test": "npm --prefix client/vite-project test"
+	},
+	"dependencies": {
+		"express": "^5.2.1"
 	}
 }
